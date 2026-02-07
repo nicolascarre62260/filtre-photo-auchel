@@ -1,85 +1,56 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Photo de profil – Auchel</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f5f5;
-      padding: 30px;
-    }
-    canvas {
-      max-width: 100%;
-      height: auto;
-      border-radius: 10px;
-      background: white;
-    }
-    button {
-      margin-top: 15px;
-      padding: 12px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
-</head>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-<body>
+const frame = new Image();
+frame.src = "cadre.png"; // ton cadre PNG
 
-  <h2>Ajoutez votre photo</h2>
+let userImage = null;
 
-  <input type="file" id="upload" accept="image/*"><br><br>
+frame.onload = () => {
+  redraw();
+};
 
-  <canvas id="canvas" width="1200" height="1200"></canvas><br>
+document.getElementById("upload").addEventListener("change", function(e) {
+  const img = new Image();
+  img.onload = () => {
+    userImage = img;
+    redraw();
+  };
+  img.src = URL.createObjectURL(e.target.files[0]);
+});
 
-  <button onclick="download()">Télécharger ma photo</button>
+function redraw() {
+  // Efface tout le canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+  // Si utilisateur a ajouté une photo
+  if (userImage) {
+    // Calcul pour centrer et ajuster la photo dans le cercle
+    const size = Math.min(userImage.width, userImage.height);
+    const sx = (userImage.width - size) / 2;
+    const sy = (userImage.height - size) / 2;
 
-    const frame = new Image();
-    frame.src = "cadre.png";
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 420, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
 
-    let userImage = null;
+    ctx.drawImage(userImage, sx, sy, size, size, 180, 180, 840, 840);
+    ctx.restore();
+  }
 
-    frame.onload = () => {
-      ctx.drawImage(frame, 0, 0, 1200, 1200);
-    };
+  // Cadre au-dessus
+  if (frame.complete) {
+    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+  }
+}
 
-    document.getElementById("upload").addEventListener("change", function(e) {
-      const img = new Image();
-      img.onload = () => {
-        userImage = img;
-        redraw();
-      };
-      img.src = URL.createObjectURL(e.target.files[0]);
-    });
-
-    function redraw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (userImage) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(600, 600, 420, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(userImage, 180, 180, 840, 840);
-        ctx.restore();
-      }
-
-      ctx.drawImage(frame, 0, 0, 1200, 1200);
-    }
-
-    function download() {
-      const link = document.createElement("a");
-      link.download = "photo-profil-auchel.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    }
-  </script>
-
-</body>
-</html>
+function download() {
+  const link = document.createElement("a");
+  link.download = "photo-profil-auchel.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+</script>
