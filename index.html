@@ -1,73 +1,49 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>Auchel avec Nicolas Carré</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background: #f5f5f5;
-  padding: 20px;
-}
-canvas {
-  display: block;
-  margin: 20px auto;
-}
-button, input {
-  padding: 10px 15px;
-  font-size: 16px;
-  margin: 10px;
-  cursor: pointer;
-}
-</style>
-</head>
-<body>
-
-<h2>Auchel ensemble avec Nicolas Carré</h2>
-<p>Ajoutez votre photo et téléchargez votre photo de profil</p>
-
-<input type="file" id="upload" accept="image/*">
-<br>
-<button onclick="download()">Télécharger l’image</button>
-
-<canvas id="canvas" width="1200" height="1200"></canvas>
-
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const frame = new Image();
-frame.src = "cadre.png"; // <-- le nom de ton cadre PNG
+frame.src = "cadre.png";
+
+let userImage = null;
+
+frame.onload = () => {
+  redraw();
+};
 
 document.getElementById("upload").addEventListener("change", function(e) {
   const img = new Image();
   img.onload = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    userImage = img;
+    redraw();
+  };
+  img.src = URL.createObjectURL(e.target.files[0]);
+});
 
-    // cercle photo
+function redraw() {
+  if (!frame.complete) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (userImage) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(600, 600, 420, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
 
-    ctx.drawImage(img, 180, 180, 840, 840);
+    ctx.drawImage(userImage, 180, 180, 840, 840);
     ctx.restore();
+  }
 
-    // cadre par-dessus
-    ctx.drawImage(frame, 0, 0, 1200, 1200);
-  };
-  img.src = URL.createObjectURL(e.target.files[0]);
-});
+  ctx.drawImage(frame, 0, 0, 1200, 1200);
+}
 
 function download() {
   const link = document.createElement("a");
   link.download = "photo-profil-auchel.png";
-  link.href = canvas.toDataURL();
+  link.href = canvas.toDataURL("image/png");
   link.click();
 }
 </script>
 
-</body>
-</html>
