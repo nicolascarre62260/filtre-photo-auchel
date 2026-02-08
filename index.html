@@ -9,12 +9,14 @@
     font-family: Arial, sans-serif;
     text-align: center;
     background: #f4f4f4;
-    padding: 30px;
+    padding: 20px;
   }
   canvas {
     max-width: 100%;
     background: white;
     border-radius: 10px;
+    touch-action: none;
+    cursor: grab;
   }
   button {
     margin-top: 15px;
@@ -22,92 +24,134 @@
     font-size: 16px;
     cursor: pointer;
   }
+  .hint {
+    font-size: 14px;
+    color: #555;
+    margin-top: 10px;
+  }
 </style>
 </head>
 
 <body>
 
-<h2>Ajoutez votre photo de profil</h2>
+<h2>Ajoutez et ajustez votre photo</h2>
 
 <input type="file" id="upload" accept="image/*"><br><br>
 
 <canvas id="canvas" width="1200" height="1200"></canvas><br>
 
+<div class="hint">
+👉 Faites glisser la photo pour bien centrer votre visage
+</div>
+
 <button onclick="download()">Télécharger ma photo</button>
 
 <script>
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-  const frame = new Image();
-  frame.src = "cadre.png"; // ⚠️ nom EXACT du fichier Canva exporté
+const frame = new Image();
+frame.src = "cadre.png";
 
-  let userImage = null;
+let img = null;
 
-  frame.onload = draw;
+// Position et zoom de la photo
+let imgX = 600;
+let imgY = 600;
+let zoom = 1.3;
 
-  document.getElementById("upload").addEventListener("change", function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
+// Drag
+let dragging = false;
+let startX, startY;
 
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      const img = new Image();
-      img.onload = function () {
-        userImage = img;
-        draw();
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
+frame.onload = draw;
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+document.getElementById("upload").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-    if (userImage) {
-      // Découpe centrée de la photo
-      const size = Math.min(userImage.width, userImage.height);
-      const sx = (userImage.width - size) / 2;
-      const sy = (userImage.height - size) / 2;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    img = new Image();
+    img.onload = draw;
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
-      // 🔥 ZOOM PHOTO (PAS LE CADRE)
-      const zoom = 1.25; // ← AUGMENTE à 1.3 si tu veux encore plus serré
-      const baseSize = 840;
-      const drawSize = baseSize * zoom;
-      const offset = (canvas.width - drawSize) / 2;
+// SOURIS
+canvas.addEventListener("mousedown", e => {
+  dragging = true;
+  startX = e.offsetX;
+  startY = e.offsetY;
+});
+canvas.addEventListener("mouseup", () => dragging = false);
+canvas.addEventListener("mouseleave", () => dragging = false);
+canvas.addEventListener("mousemove", e => {
+  if (!dragging) return;
+  imgX += e.offsetX - startX;
+  imgY += e.offsetY - startY;
+  startX = e.offsetX;
+  startY = e.offsetY;
+  draw();
+});
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(600, 600, 420, 0, Math.PI * 2);
-      ctx.clip();
+// TOUCH (mobile)
+canvas.addEventListener("touchstart", e => {
+  dragging = true;
+  const t = e.touches[0];
+  startX = t.clientX;
+  startY = t.clientY;
+});
+canvas.addEventListener("touchend", () => dragging = false);
+canvas.addEventListener("touchmove", e => {
+  if (!dragging) return;
+  const t = e.touches[0];
+  imgX += t.clientX - startX;
+  imgY += t.clientY - startY;
+  startX = t.clientX;
+  startY = t.clientY;
+  draw();
+});
 
-      ctx.drawImage(
-        userImage,
-        sx,
-        sy,
-        size,
-        size,
-        offset,
-        offset,
-        drawSize,
-        drawSize
-      );
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.restore();
-    }
+  if (img) {
+    const size = Math.min(img.width, img.height);
+    const drawSize = 840 * zoom;
 
-    // Cadre toujours au-dessus
-    ctx.drawImage(frame, 0, 0, 1200, 1200);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(600, 600, 420, 0, Math.PI * 2);
+    ctx.clip();
+
+    ctx.drawImage(
+      img,
+      (img.width - size) / 2,
+      (img.height - size) / 2,
+      size,
+      size,
+      imgX - drawSize / 2,
+      imgY - drawSize / 2,
+      drawSize,
+      drawSize
+    );
+
+    ctx.restore();
   }
 
-  function download() {
-    const link = document.createElement("a");
-    link.download = "photo-profil-auchel.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  }
+  ctx.drawImage(frame, 0, 0, 1200, 1200);
+}
+
+function download() {
+  const link = document.createElement("a");
+  link.download = "photo-profil-auchel.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
 </script>
 
 </body>
 </html>
+
