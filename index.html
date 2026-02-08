@@ -29,6 +29,17 @@ button {
   color: #555;
   margin-top: 10px;
 }
+#resultImg {
+  margin-top: 20px;
+  max-width: 90%;
+  border-radius: 10px;
+  display: none;
+}
+#iosHint {
+  font-size: 13px;
+  color: #d33;
+  margin-top: 8px;
+}
 </style>
 </head>
 
@@ -46,24 +57,28 @@ button {
 
 <button id="zoomIn">+</button>
 <button id="zoomOut">–</button>
-<button onclick="download()">Télécharger</button>
+<button id="generate">Générer ma photo</button>
+<button id="saveBtn" style="display:none;">Enregistrer dans Photos</button>
+
+<div id="iosHint" style="display:none;">
+<i>iPhone/iPad : appuyez longuement sur l'image générée et sélectionnez “Ajouter aux Photos”</i>
+</div>
+
+<img id="resultImg" alt="Photo générée">
 
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-
 const frame = new Image();
-frame.src = "cadre.png"; // nom exact du fichier Canva exporté
+frame.src = "cadre.png"; // Nom exact du fichier Canva
 
 let img = null;
-
-// Position et zoom
 let imgX = 600;
 let imgY = 600;
-let zoom = 1.2; // zoom initial ajusté
+let zoom = 1.0; // zoom initial réduit pour ne pas dépasser le cadre
 
-// Rayon photo légèrement plus petit que le cadre (pour ne pas dépasser)
-const circleRadius = 540; // cadre 600px → cercle photo 540px
+// Cercle photo légèrement plus petit que le cadre pour éviter dépassement
+const circleRadius = 520; // cadre 600px → photo plus petite
 
 let dragging = false;
 let startX, startY;
@@ -117,9 +132,42 @@ canvas.addEventListener("touchmove", e=>{
   draw();
 });
 
-// Boutons zoom
+// Zoom boutons
 document.getElementById("zoomIn").addEventListener("click", ()=>{ zoom *= 1.1; draw(); });
 document.getElementById("zoomOut").addEventListener("click", ()=>{ zoom /= 1.1; draw(); });
+
+// Générer photo
+document.getElementById("generate").addEventListener("click", ()=>{
+  draw();
+  const dataURL = canvas.toDataURL("image/png");
+  const resultImg = document.getElementById("resultImg");
+  resultImg.src = dataURL;
+  resultImg.style.display = "block";
+
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const saveBtn = document.getElementById("saveBtn");
+  const iosHint = document.getElementById("iosHint");
+
+  saveBtn.style.display = "inline-block";
+  iosHint.style.display = isIOS ? "block" : "none";
+});
+
+// Enregistrer dans Photos
+document.getElementById("saveBtn").addEventListener("click", ()=>{
+  const resultImg = document.getElementById("resultImg");
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  if(isIOS){
+    // iOS : ouvre dans nouvel onglet → appui long → "Ajouter aux Photos"
+    window.open(resultImg.src, "_blank");
+  } else {
+    // Android / PC : téléchargement direct
+    const link = document.createElement("a");
+    link.href = resultImg.src;
+    link.download = "photo-profil-auchel.png";
+    link.click();
+  }
+});
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -146,31 +194,13 @@ function draw(){
 
     ctx.restore();
   }
-  // Cadre toujours au-dessus
   ctx.drawImage(frame,0,0,1200,1200);
-}
-
-function download(){
-  const dataURL = canvas.toDataURL("image/png");
-
-  // Détection mobile
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  if(isMobile){
-    // Ouvre l'image dans un nouvel onglet → l'utilisateur peut "enregistrer l'image"
-    window.open(dataURL, "_blank");
-  } else {
-    // Téléchargement direct sur PC
-    const link = document.createElement("a");
-    link.download = "photo-profil-auchel.png";
-    link.href = dataURL;
-    link.click();
-  }
 }
 </script>
 
 </body>
 </html>
+
 
 
 
