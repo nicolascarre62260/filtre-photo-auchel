@@ -53,12 +53,17 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const frame = new Image();
-frame.src = "cadre.png"; // nom exact du cadre exporté
+frame.src = "cadre.png"; // nom exact du fichier Canva exporté
 
 let img = null;
+
+// Position et zoom
 let imgX = 600;
 let imgY = 600;
 let zoom = 1.5;
+
+// Rayon du cercle (ici 550px → diamètre 1100px)
+const circleRadius = 550;
 
 let dragging = false;
 let startX, startY;
@@ -120,25 +125,28 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   if(img){
     const size = Math.max(img.width,img.height);
-    const cercleDiam = 840;
-    const drawSize = cercleDiam * zoom;
+    const drawSize = circleRadius * 2 * zoom; // diamètre photo > cercle
+
     ctx.save();
     ctx.beginPath();
-    ctx.arc(600,600,cercleDiam/2,0,Math.PI*2);
+    ctx.arc(600,600,circleRadius,0,Math.PI*2);
     ctx.clip();
+
     ctx.drawImage(
       img,
       (img.width-size)/2,
       (img.height-size)/2,
       size,
       size,
-      imgX-drawSize/2,
-      imgY-drawSize/2,
+      imgX - drawSize/2,
+      imgY - drawSize/2,
       drawSize,
       drawSize
     );
+
     ctx.restore();
   }
+  // Cadre toujours au-dessus
   ctx.drawImage(frame,0,0,1200,1200);
 }
 
@@ -152,3 +160,4 @@ function download(){
 
 </body>
 </html>
+
