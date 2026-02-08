@@ -56,14 +56,12 @@ const frame = new Image();
 frame.src = "cadre.png"; // nom exact du fichier Canva exporté
 
 let img = null;
-
-// Position et zoom
 let imgX = 600;
 let imgY = 600;
-let zoom = 1.5;
+let zoom = 1.1; // ajuster si besoin
 
-// Rayon du cercle (ici 550px → diamètre 1100px)
-const circleRadius = 550;
+// Rayon photo = rayon du cadre
+const circleRadius = 600; // moitié de 1200px = 600 → cercle de la photo = cercle du cadre
 
 let dragging = false;
 let startX, startY;
@@ -125,7 +123,7 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   if(img){
     const size = Math.max(img.width,img.height);
-    const drawSize = circleRadius * 2 * zoom; // diamètre photo > cercle
+    const drawSize = circleRadius * 2 * zoom;
 
     ctx.save();
     ctx.beginPath();
@@ -160,4 +158,5 @@ function download(){
 
 </body>
 </html>
+
 
