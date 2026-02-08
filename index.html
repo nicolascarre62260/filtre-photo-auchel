@@ -1,39 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Photo de profil – Auchel</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f5f5f5;
+    padding: 30px;
+  }
+  canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    background: white;
+  }
+  button {
+    margin-top: 15px;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h2>Ajoutez votre photo</h2>
+<input type="file" id="upload" accept="image/*"><br><br>
+
+<canvas id="canvas" width="1200" height="1200"></canvas><br>
+
+<button onclick="download()">Télécharger ma photo</button>
+
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const frame = new Image();
 frame.src = "cadre.png"; // ton cadre PNG
-
 let userImage = null;
 
-frame.onload = () => {
-  redraw();
-};
+frame.onload = () => redraw();
 
 document.getElementById("upload").addEventListener("change", function(e) {
   const img = new Image();
-  img.onload = () => {
-    userImage = img;
+  img.onload = () => { 
+    userImage = img; 
     redraw();
   };
   img.src = URL.createObjectURL(e.target.files[0]);
 });
 
 function redraw() {
-  // Efface tout le canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Si utilisateur a ajouté une photo
-  if (userImage) {
-    // Calcul pour centrer et ajuster la photo dans le cercle
+  // Photo utilisateur
+  if(userImage){
+    // découpe centrale et mise à l'échelle pour cercle
     const size = Math.min(userImage.width, userImage.height);
-    const sx = (userImage.width - size) / 2;
-    const sy = (userImage.height - size) / 2;
+    const sx = (userImage.width - size)/2;
+    const sy = (userImage.height - size)/2;
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, 420, 0, Math.PI * 2);
+    ctx.arc(canvas.width/2, canvas.height/2, 420, 0, Math.PI*2);
     ctx.closePath();
     ctx.clip();
 
@@ -42,15 +73,18 @@ function redraw() {
   }
 
   // Cadre au-dessus
-  if (frame.complete) {
+  if(frame.complete){
     ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
   }
 }
 
-function download() {
+function download(){
   const link = document.createElement("a");
   link.download = "photo-profil-auchel.png";
   link.href = canvas.toDataURL("image/png");
   link.click();
 }
 </script>
+
+</body>
+</html>
