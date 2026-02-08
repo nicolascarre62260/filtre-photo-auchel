@@ -52,7 +52,7 @@ button {
 <canvas id="canvas" width="1200" height="1200"></canvas><br>
 
 <div class="hint">
-👉 Glissez la photo pour centrer votre visage. Utilisez + / – pour zoomer.
+👉 Glissez la photo pour centrer votre visage. Zoom optionnel si nécessaire.
 </div>
 
 <button id="zoomIn">+</button>
@@ -70,15 +70,16 @@ button {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const frame = new Image();
-frame.src = "cadre.png"; // Nom exact du fichier Canva
+frame.src = "cadre.png"; // Nom exact du cadre Canva
 
 let img = null;
 let imgX = 600;
 let imgY = 600;
-let zoom = 1.0; // zoom initial réduit pour ne pas dépasser le cadre
+let zoom = 1.0;
 
-// Cercle photo légèrement plus petit que le cadre pour éviter dépassement
-const circleRadius = 520; // cadre 600px → photo plus petite
+// Masque elliptique : largeur et hauteur légèrement différentes pour correspondre au cadre
+const ellipseRadiusX = 540; // moitié largeur visible du cadre
+const ellipseRadiusY = 500; // moitié hauteur visible du cadre
 
 let dragging = false;
 let startX, startY;
@@ -91,7 +92,12 @@ document.getElementById("upload").addEventListener("change", function(e){
   const reader = new FileReader();
   reader.onload = function(ev){
     img = new Image();
-    img.onload = draw;
+    img.onload = () => {
+      // Centrer automatiquement
+      imgX = 600;
+      imgY = 600;
+      draw();
+    };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
@@ -133,8 +139,8 @@ canvas.addEventListener("touchmove", e=>{
 });
 
 // Zoom boutons
-document.getElementById("zoomIn").addEventListener("click", ()=>{ zoom *= 1.1; draw(); });
-document.getElementById("zoomOut").addEventListener("click", ()=>{ zoom /= 1.1; draw(); });
+document.getElementById("zoomIn").addEventListener("click", ()=>{ zoom *= 1.05; draw(); });
+document.getElementById("zoomOut").addEventListener("click", ()=>{ zoom /= 1.05; draw(); });
 
 // Générer photo
 document.getElementById("generate").addEventListener("click", ()=>{
@@ -158,10 +164,9 @@ document.getElementById("saveBtn").addEventListener("click", ()=>{
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   if(isIOS){
-    // iOS : ouvre dans nouvel onglet → appui long → "Ajouter aux Photos"
+    // iOS : ouvre l'image → appui long → Ajouter aux Photos
     window.open(resultImg.src, "_blank");
   } else {
-    // Android / PC : téléchargement direct
     const link = document.createElement("a");
     link.href = resultImg.src;
     link.download = "photo-profil-auchel.png";
@@ -173,11 +178,11 @@ function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   if(img){
     const size = Math.max(img.width,img.height);
-    const drawSize = circleRadius * 2 * zoom;
+    const drawSize = Math.max(ellipseRadiusX*2, ellipseRadiusY*2) * zoom;
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(600,600,circleRadius,0,Math.PI*2);
+    ctx.ellipse(600, 600, ellipseRadiusX, ellipseRadiusY, 0, 0, Math.PI*2);
     ctx.clip();
 
     ctx.drawImage(
@@ -194,13 +199,10 @@ function draw(){
 
     ctx.restore();
   }
+  // Cadre au-dessus
   ctx.drawImage(frame,0,0,1200,1200);
 }
 </script>
 
 </body>
 </html>
-
-
-
-
