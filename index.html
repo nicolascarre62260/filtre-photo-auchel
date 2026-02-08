@@ -41,7 +41,7 @@
 <canvas id="canvas" width="1200" height="1200"></canvas><br>
 
 <div class="hint">
- Faites glisser la photo pour bien centrer votre visage
+👉 Faites glisser la photo pour centrer votre visage
 </div>
 
 <button onclick="download()">Télécharger ma photo</button>
@@ -51,14 +51,14 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const frame = new Image();
-frame.src = "cadre.png";
+frame.src = "cadre.png"; // ⚠️ nom EXACT du fichier Canva exporté
 
 let img = null;
 
-// Position et zoom de la photo
+// Position et zoom
 let imgX = 600;
 let imgY = 600;
-let zoom = 1.8;
+let zoom = 1.6;
 
 // Drag
 let dragging = false;
@@ -118,7 +118,8 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (img) {
-    const size = Math.min(img.width, img.height);
+    // 🔹 prend la PLUS GRANDE dimension pour remplir le cercle
+    const size = Math.max(img.width, img.height);
     const drawSize = 840 * zoom;
 
     ctx.save();
@@ -141,6 +142,7 @@ function draw() {
     ctx.restore();
   }
 
+  // Cadre toujours au-dessus
   ctx.drawImage(frame, 0, 0, 1200, 1200);
 }
 
@@ -154,3 +156,4 @@ function download() {
 
 </body>
 </html>
+
